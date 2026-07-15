@@ -11,6 +11,7 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
     header("location:login.php");
     exit;
 }
+  
 
 // 2. Koneksi ke Database
 $host = "localhost"; 
