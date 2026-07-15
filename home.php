@@ -17,7 +17,7 @@ if(isset($_GET['logout'])) {
 $host = "localhost"; 
 $user = "root";      
 $pass = "";          
-$db   = "db_agenda_mahasiswa"; 
+$db   = "agendakegiatanmahasiswa"; 
 
 $koneksi = mysqli_connect($host, $user, $pass, $db);
 

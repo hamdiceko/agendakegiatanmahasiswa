@@ -16,7 +16,7 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
 $host = "localhost"; 
 $user = "root";      
 $pass = "";          
-$db   = "db_agenda_mahasiswa"; 
+$db   = "agendakegiatanmahasiswa"; 
 
 $koneksi = mysqli_connect($host, $user, $pass, $db);
 
