@@ -1,4 +1,15 @@
+<?php
+// 1. Hubungkan ke database asli
+$koneksi = mysqli_connect("localhost", "root", "", "db_agenda_mahasiswa");
 
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
+}
+
+// 2. Ambil data pengurus secara dinamis dari tabel database
+$query = mysqli_query($koneksi, "SELECT * FROM pengurus");
+$total_data = mysqli_num_rows($query);
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -32,16 +43,11 @@
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
             overflow: hidden;
+            background-color: #fff;
         }
         .card-pengurus:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
-        }
-        .foto-pengurus {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-            background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%);
         }
         .foto-placeholder {
             width: 100%;
@@ -85,56 +91,38 @@
             color: #1e293b;
             word-break: break-word;
         }
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: #64748b;
-        }
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 1rem;
-            color: #cbd5e1;
-        }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
     <div class="row">
+        <!-- Sidebar -->
         <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
             <div class="d-flex align-items-center mb-4 px-2">
-                <span class="fs-5 fw-bold tracking-wide">SI-AGENDA</span>
+                <span class="fs-5 fw-bold text-white">SI-AGENDA</span>
             </div>
             <hr class="text-secondary">
             <ul class="nav flex-column gap-2">
                 <li class="nav-item">
-                    <a href="home.php" class="nav-link py-2.5 px-3 d-flex align-items-center">
-                        Dashboard Agenda
-                    </a>
+                    <a href="home.php" class="nav-link py-2.5 px-3">Dashboard Agenda</a>
                 </li>
                 <li class="nav-item">
-                    <a href="jadwal.php" class="nav-link py-2.5 px-3">
-                        Jadwal Agenda
-                    </a>
+                    <a href="jadwal.php" class="nav-link py-2.5 px-3">Jadwal Agenda</a>
                 </li>
                 <li class="nav-item">
-                    <a href="agenda.php" class="nav-link py-2.5 px-3">
-                        List Agenda
-                    </a>
+                    <a href="agenda.php" class="nav-link py-2.5 px-3">List Agenda</a>
                 </li>
                 <li class="nav-item">
-                    <a href="pengurus.php" class="nav-link active py-2.5 px-3">
-                        Data Pengurus
-                    </a>
+                    <a href="pengurus.php" class="nav-link active py-2.5 px-3">Data Pengurus</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="nav-link py-2.5 px-3 text-danger mt-5">
-                        Keluar
-                    </a>
+                    <a href="logout.php" class="nav-link py-2.5 px-3 text-danger mt-5">Keluar</a>
                 </li>
             </ul>
         </div>
 
+        <!-- Main Content -->
         <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
             
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
@@ -157,134 +145,58 @@
                                 <input type="text" class="form-control" id="searchPengurus" placeholder="Cari berdasarkan nama atau nim...">
                             </div>
                             <div class="col-md-6 d-flex justify-content-md-end">
-                                <a href="tambah_pengurus.php" class="btn btn-primary px-4">
-                                    + Tambah Pengurus
-                                </a>
+                                <a href="tambah_pengurus.php" class="btn btn-primary px-4">+ Tambah Pengurus</a>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Daftar Pengurus -->
-            <div class="row g-4">
-                <!-- Card Pengurus 1 -->
-                <div class="col-md-6 col-lg-4 pengurus-item">
+            <!-- Daftar Pengurus (Looping dari Database) -->
+            <div class="row g-4" id="daftarPengurus">
+                
+                <?php 
+                if ($total_data > 0) {
+                    while ($row = mysqli_fetch_assoc($query)) { 
+                ?>
+                <div class="col-sm-6 col-md-6 col-lg-4 pengurus-item">
                     <div class="card card-pengurus">
-                        <div class="foto-placeholder">
-                            <span>👤</span>
-                        </div>
+                        <div class="foto-placeholder"><span>👤</span></div>
                         <div class="pengurus-info">
-                            <div class="pengurus-nama">Ahmad Rizqi</div>
-                            <div class="pengurus-jabatan">Ketua</div>
-
+                            <!-- Menampilkan nama_lengkap sesuai database -->
+                            <div class="pengurus-nama"><?= htmlspecialchars($row['nama_lengkap']); ?></div>
+                            <div class="pengurus-jabatan"><?= htmlspecialchars($row['jabatan']); ?></div>
                             <div class="pengurus-detail">
                                 <span class="pengurus-detail-label">NIM:</span>
-                                <span class="pengurus-detail-value">2201001</span>
+                                <span class="pengurus-detail-value info-nim"><?= htmlspecialchars($row['nim']); ?></span>
                             </div>
-
                             <div class="pengurus-detail">
                                 <span class="pengurus-detail-label">Email:</span>
-                                <span class="pengurus-detail-value">ahmad@example.com</span>
+                                <span class="pengurus-detail-value"><?= htmlspecialchars($row['email']); ?></span>
                             </div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">Username:</span>
-                                <span class="pengurus-detail-value">ahmad_rizqi</span>
-                            </div>
-
                             <div class="d-flex gap-2 mt-3">
-                                <a href="#" class="btn btn-sm btn-outline-primary flex-grow-1">
-                                    Edit
-                                </a>
-                                <a href="#" class="btn btn-sm btn-outline-danger">
-                                    Hapus
-                                </a>
+                                <a href="edit_pengurus.php?nim=<?= urlencode($row['nim']); ?>" class="btn btn-sm btn-outline-primary flex-grow-1">Edit</a>
+                                <a href="hapus_pengurus.php?nim=<?= urlencode($row['nim']); ?>" class="btn btn-sm btn-outline-danger">Hapus</a>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <!-- Card Pengurus 2 -->
-                <div class="col-md-6 col-lg-4 pengurus-item">
-                    <div class="card card-pengurus">
-                        <div class="foto-placeholder">
-                            <span>👤</span>
-                        </div>
-                        <div class="pengurus-info">
-                            <div class="pengurus-nama">Siti Nurhaliza</div>
-                            <div class="pengurus-jabatan">Wakil Ketua</div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">NIM:</span>
-                                <span class="pengurus-detail-value">2201002</span>
-                            </div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">Email:</span>
-                                <span class="pengurus-detail-value">siti@example.com</span>
-                            </div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">Username:</span>
-                                <span class="pengurus-detail-value">siti_nur</span>
-                            </div>
-
-                            <div class="d-flex gap-2 mt-3">
-                                <a href="#" class="btn btn-sm btn-outline-primary flex-grow-1">
-                                    Edit
-                                </a>
-                                <a href="#" class="btn btn-sm btn-outline-danger">
-                                    Hapus
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                <?php 
+                    } 
+                } else { 
+                ?>
+                <div class="col-12 text-center py-5">
+                    <p class="text-secondary mb-0">Belum ada data pengurus di database.</p>
                 </div>
+                <?php } ?>
 
-                <!-- Card Pengurus 3 -->
-                <div class="col-md-6 col-lg-4 pengurus-item">
-                    <div class="card card-pengurus">
-                        <div class="foto-placeholder">
-                            <span>👤</span>
-                        </div>
-                        <div class="pengurus-info">
-                            <div class="pengurus-nama">Budi Santoso</div>
-                            <div class="pengurus-jabatan">Sekretaris</div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">NIM:</span>
-                                <span class="pengurus-detail-value">2201003</span>
-                            </div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">Email:</span>
-                                <span class="pengurus-detail-value">budi@example.com</span>
-                            </div>
-
-                            <div class="pengurus-detail">
-                                <span class="pengurus-detail-label">Username:</span>
-                                <span class="pengurus-detail-value">budi_santoso</span>
-                            </div>
-
-                            <div class="d-flex gap-2 mt-3">
-                                <a href="#" class="btn btn-sm btn-outline-primary flex-grow-1">
-                                    Edit
-                                </a>
-                                <a href="#" class="btn btn-sm btn-outline-danger">
-                                    Hapus
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Footer Info -->
             <div class="row mt-4">
                 <div class="col-12">
                     <p class="text-secondary small text-center mb-0">
-                        Total Pengurus: <strong>3</strong>
+                        Total Pengurus: <strong id="totalPengurus"><?= $total_data; ?></strong>
                     </p>
                 </div>
             </div>
@@ -294,5 +206,27 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Real-time Search Logic
+    document.getElementById('searchPengurus').addEventListener('input', function() {
+        let filter = this.value.toLowerCase();
+        let items = document.querySelectorAll('.pengurus-item');
+        let count = 0;
+
+        items.forEach(function(item) {
+            let nama = item.querySelector('.pengurus-nama').innerText.toLowerCase();
+            let nim = item.querySelector('.info-nim').innerText.toLowerCase();
+            
+            if (nama.includes(filter) || nim.includes(filter)) {
+                item.removeAttribute('style'); // Mengembalikan ke display aslinya agar grid tidak hancur
+                count++;
+            } else {
+                item.style.setProperty('display', 'none', 'important');
+            }
+        });
+
+        document.getElementById('totalPengurus').innerText = count;
+    });
+</script>
 </body>
 </html>

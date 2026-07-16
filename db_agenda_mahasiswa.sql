@@ -18,8 +18,7 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
-$db   = "agendakegiatanmahasiswa"; 
--- Database: ``
+-- Database: `db_agenda_mahasiswa`
 --
 
 -- --------------------------------------------------------
