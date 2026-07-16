@@ -11,8 +11,7 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] !== "login") {
 $host = "localhost"; 
 $user = "root";      
 $pass = "";          
-$db   = "agendakegiatanmahasiswa"; 
-$db   = ""; 
+$db   = "db_agenda_mahasiswa"; 
 
 $koneksi = mysqli_connect($host, $user, $pass, $db);
 
@@ -156,7 +155,4 @@ if (isset($_POST['simpan'])) {
 </div>
 
 </body>
-<!-- Inject fitur gacor tanpa merusak kodingan asli -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="script.js?v=<?php echo time(); ?>"></script>
 </html>

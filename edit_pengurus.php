@@ -1,3 +1,64 @@
+<?php
+// 1. KONEKSI DATABASE
+$host     = "localhost";
+$username = "root";
+$password = "";
+$database = "db_agenda_mahasiswa";
+
+$koneksi = mysqli_connect($host, $username, $password, $database);
+
+if (!$koneksi) {
+    die("Koneksi database gagal: " . mysqli_connect_error());
+}
+
+// 2. AMBIL DATA LAMA UNTUK DITAMPILKAN DI FORM
+if (!isset($_GET['nim']) || empty($_GET['nim'])) {
+    echo "<script>alert('NIM tidak ditentukan!'); window.location='pengurus.php';</script>";
+    exit;
+}
+
+$nim_url = mysqli_real_escape_string($koneksi, $_GET['nim']);
+
+// Menyesuaikan query ke tabel 'pengurus' berdasarkan kolom 'nim' sesuai gambar struktur Anda
+$query_get = "SELECT * FROM pengurus WHERE nim = '$nim_url' LIMIT 1"; 
+$result_get = mysqli_query($koneksi, $query_get);
+
+if (!$result_get) {
+    die("Query Error: " . mysqli_error($koneksi));
+}
+
+$data = mysqli_fetch_assoc($result_get);
+
+// Jika data tidak ditemukan di database
+if (!$data) {
+    echo "<script>alert('Data pengurus tidak ditemukan!'); window.location='pengurus.php';</script>";
+    exit;
+}
+
+// 3. PROSES SIMPAN PERUBAHAN DATA (SAAT FORM DI-SUBMIT)
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // Ambil input formulir
+    $nim_baru     = mysqli_real_escape_string($koneksi, $_POST['nim']);
+    $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
+    $jabatan      = mysqli_real_escape_string($koneksi, $_POST['jabatan']);
+    $email        = mysqli_real_escape_string($koneksi, $_POST['email']);
+    
+    // Query UPDATE disesuaikan dengan struktur kolom asli database Anda
+    $query_update = "UPDATE pengurus SET 
+                        nim = '$nim_baru', 
+                        nama_lengkap = '$nama_lengkap', 
+                        jabatan = '$jabatan',
+                        email = '$email'
+                     WHERE nim = '$nim_url'";
+
+    if (mysqli_query($koneksi, $query_update)) {
+        echo "<script>alert('Data pengurus berhasil diperbarui!'); window.location='pengurus.php';</script>";
+        exit;
+    } else {
+        echo "<script>alert('Gagal menyimpan perubahan: " . mysqli_error($koneksi) . "');</script>";
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -25,100 +86,59 @@
             background-color: rgba(255, 255, 255, 0.1);
             border-radius: 8px;
         }
-        .preview-foto {
-            max-width: 200px;
-            max-height: 200px;
-            margin-top: 1rem;
-            border-radius: 8px;
-            border: 2px solid #e2e8f0;
-        }
     </style>
 </head>
 <body>
 
 <div class="container-fluid">
     <div class="row">
+        <!-- Sidebar -->
         <div class="col-md-3 col-lg-2 sidebar p-3 d-none d-md-block">
             <div class="d-flex align-items-center mb-4 px-2">
                 <span class="fs-5 fw-bold tracking-wide">SI-AGENDA</span>
             </div>
             <hr class="text-secondary">
             <ul class="nav flex-column gap-2">
-                <li class="nav-item">
-                    <a href="home.php" class="nav-link py-2.5 px-3 d-flex align-items-center">
-                        Dashboard Agenda
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="jadwal.php" class="nav-link py-2.5 px-3">
-                        Jadwal Agenda
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="agenda.php" class="nav-link py-2.5 px-3">
-                        List Agenda
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="pengurus.php" class="nav-link py-2.5 px-3">
-                        Data Pengurus
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link py-2.5 px-3 text-danger mt-5">
-                        Keluar
-                    </a>
-                </li>
+                <li class="nav-item"><a href="home.php" class="nav-link py-2.5 px-3">Dashboard Agenda</a></li>
+                <li class="nav-item"><a href="jadwal.php" class="nav-link py-2.5 px-3">Jadwal Agenda</a></li>
+                <li class="nav-item"><a href="agenda.php" class="nav-link py-2.5 px-3">List Agenda</a></li>
+                <li class="nav-item"><a href="pengurus.php" class="nav-link active py-2.5 px-3">Data Pengurus</a></li>
+                <li class="nav-item"><a href="#" class="nav-link py-2.5 px-3 text-danger mt-5">Keluar</a></li>
             </ul>
         </div>
 
+        <!-- Main Content -->
         <div class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
             
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
                 <div>
                     <h1 class="h2 fw-bold text-dark">Edit Data Pengurus</h1>
-                    <p class="text-secondary small">Ubah informasi pengurus.</p>
-                </div>
-                <div class="btn-toolbar mb-2 mb-md-0">
-                    <span class="badge bg-primary p-2 align-self-center">Sesi: Admin Utama</span>
+                    <p class="text-secondary small">Ubah informasi lengkap pengurus.</p>
                 </div>
             </div>
 
-            <div class="card border-0 rounded-3 bg-white" style="box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div class="card border-0 rounded-3 bg-white shadow-sm">
                 <div class="card-body p-4">
-                    <form method="POST" enctype="multipart/form-data">
+                    <form method="POST" action="">
                         <div class="row g-4">
                             <div class="col-md-6">
                                 <label for="nim" class="form-label fw-semibold">NIM</label>
-                                <input type="text" class="form-control" id="nim" name="nim" placeholder="Masukkan NIM" required value="2201001">
+                                <input type="text" class="form-control" id="nim" name="nim" required value="<?= htmlspecialchars($data['nim'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-6">
                                 <label for="nama_lengkap" class="form-label fw-semibold">Nama Lengkap</label>
-                                <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" placeholder="Masukkan nama lengkap" required value="Ahmad Rizqi">
+                                <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" required value="<?= htmlspecialchars($data['nama_lengkap'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-6">
                                 <label for="jabatan" class="form-label fw-semibold">Jabatan</label>
-                                <input type="text" class="form-control" id="jabatan" name="jabatan" placeholder="Contoh: Ketua, Wakil Ketua, Sekretaris" required value="Ketua">
+                                <input type="text" class="form-control" id="jabatan" name="jabatan" required value="<?= htmlspecialchars($data['jabatan'] ?? ''); ?>">
                             </div>
 
                             <div class="col-md-6">
                                 <label for="email" class="form-label fw-semibold">Email</label>
-                                <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email" value="ahmad@example.com">
-                            </div>
-
-                            <div class="col-12">
-                                <label for="foto" class="form-label fw-semibold">Foto Profil</label>
-                                <input type="file" class="form-control" id="foto" name="foto" accept="image/*">
-                                <small class="text-secondary d-block mt-2">Format: JPG, PNG, GIF. Ukuran maksimal: 5MB. Kosongkan jika tidak ingin mengubah foto.</small>
-                                
-                                <div class="mt-3">
-                                    <p class="fw-semibold small text-secondary">Foto Saat Ini:</p>
-                                    <div class="preview-foto" style="width: 200px; height: 200px; background: linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
-                                        👤
-                                    </div>
-                                </div>
+                                <input type="email" class="form-control" id="email" name="email" required value="<?= htmlspecialchars($data['email'] ?? ''); ?>">
                             </div>
 
                             <div class="col-12 text-end mt-4">
